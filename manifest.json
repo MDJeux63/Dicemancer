@@ -1,0 +1,16 @@
+{
+  "name": "Dicemancer",
+  "short_name": "Dicemancer",
+  "start_url": "index.html",
+  "display": "fullscreen",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/favicon.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}

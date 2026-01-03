@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Dicemancer</title>
+    <link rel="shortcut icon" href="/assets/favicon.png" type="image/x-icon" />
+
+    <!-- 1. TAILWIND LOCAL -->
+    <script src="assets/js/tailwindcss.js"></script>
+
+    <!-- 2. FONTAWESOME LOCAL -->
+    <link rel="stylesheet" href="assets/css/all.min.css" />
+
+    <style>
+      /* 3. POLICES LOCALES */
+      @font-face {
+        font-family: "Metamorphous";
+        src: url("assets/fonts/Metamorphous-Regular.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: "New Rocker";
+        src: url("assets/fonts/NewRocker-Regular.ttf") format("truetype");
+      }
+
+      body {
+        font-family: "Metamorphous", sans-serif;
+        background-color: #1a1a2e;
+        color: #e0e0e0;
+        overscroll-behavior: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        overflow-x: hidden;
+      }
+
+      .retro-font {
+        font-family: "New Rocker", sans-serif;
+      }
+
+      /* Animations */
+      @keyframes shake {
+        0% {
+          transform: translate(1px, 1px) rotate(0deg);
+        }
+        10% {
+          transform: translate(-1px, -2px) rotate(-1deg);
+        }
+        20% {
+          transform: translate(-3px, 0px) rotate(1deg);
+        }
+        30% {
+          transform: translate(3px, 2px) rotate(0deg);
+        }
+        40% {
+          transform: translate(1px, -1px) rotate(1deg);
+        }
+        50% {
+          transform: translate(-1px, 2px) rotate(-1deg);
+        }
+        60% {
+          transform: translate(-3px, 1px) rotate(0deg);
+        }
+        70% {
+          transform: translate(3px, 1px) rotate(-1deg);
+        }
+        80% {
+          transform: translate(-1px, -1px) rotate(1deg);
+        }
+        90% {
+          transform: translate(1px, 2px) rotate(0deg);
+        }
+        100% {
+          transform: translate(1px, -2px) rotate(-1deg);
+        }
+      }
+
+      .shake-anim {
+        animation: shake 0.5s;
+      }
+
+      @keyframes damage-pop {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(2) translateY(-20px);
+          opacity: 0;
+        }
+      }
+
+      .damage-text {
+        position: absolute;
+        left: 0;
+        top: 40%;
+        width: 100%;
+        text-align: center;
+        color: #ff4444;
+        font-weight: bold;
+        font-size: 1.5rem;
+        animation: damage-pop 0.8s forwards;
+        pointer-events: none;
+        z-index: 50;
+        text-shadow: 2px 2px 0 #000;
+      }
+
+      @keyframes toast-fade {
+        0% {
+          opacity: 0;
+          transform: translateY(-20px) translateX(-50%);
+        }
+        10% {
+          opacity: 1;
+          transform: translateY(0) translateX(-50%);
+        }
+        90% {
+          opacity: 1;
+          transform: translateY(0) translateX(-50%);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-20px) translateX(-50%);
+        }
+      }
+
+      .toast-msg {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #10b981;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+        animation: toast-fade 2s forwards;
+        pointer-events: none;
+        width: max-content;
+        max-width: 90%;
+        text-align: center;
+      }
+
+      .dice-face {
+        width: 56px;
+        height: 56px;
+        background: white;
+        border-radius: 8px;
+        color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s;
+        overflow: hidden;
+      }
+      @media (min-width: 640px) {
+        .dice-face {
+          width: 64px;
+          height: 64px;
+          font-size: 1.5rem;
+        }
+      }
+
+      .dice-rolling {
+        animation: spin 0.3s infinite linear;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Gem Colors */
+      .gem-blue {
+        color: #3b82f6;
+        text-shadow: 0 0 5px #3b82f6;
+        font-size: 20px;
+      }
+      .gem-red {
+        color: #ef4444;
+        text-shadow: 0 0 5px #ef4444;
+        font-size: 20px;
+      }
+      .gem-yellow {
+        color: #eab308;
+        text-shadow: 0 0 5px #eab308;
+        font-size: 20px;
+      }
+      .gem-green {
+        color: #22c55e;
+        text-shadow: 0 0 5px #22c55e;
+        font-size: 20px;
+      }
+      .gem-violet {
+        color: #a855f7;
+        text-shadow: 0 0 5px #a855f7;
+        font-size: 20px;
+      }
+
+      .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #2d2d42;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 3px;
+      }
+
+      .tab-btn.active {
+        background-color: #4f46e5;
+        color: white;
+        border-bottom: 2px solid #818cf8;
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 6px;
+        background-color: #374151;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 5px;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background-color: #3b82f6;
+        width: 0%;
+        transition: width 0.1s linear;
+      }
+
+      .boss-glow {
+        box-shadow: 0 0 20px #ef4444;
+        border: 2px solid #ef4444;
+      }
+      #game-over-screen {
+        backdrop-filter: blur(5px);
+      }
+
+      .game-icon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+      .game-icon-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      #btn-activate-ring {
+        animation: pulse-ring 2s infinite;
+      }
+      @keyframes pulse-ring {
+        0% {
+          box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 6px rgba(234, 179, 8, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+        }
+      }
+
+      /* Menu specific styles */
+      .slot-card {
+        transition: all 0.2s;
+        border: 2px solid #374151;
+      }
+      .slot-card:hover {
+        border-color: #4f46e5;
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body
+    class="h-screen flex flex-col overflow-hidden relative text-sm md:text-base"
+  >
+    <!-- MAIN MENU -->
+    <div
+      id="main-menu"
+      class="absolute inset-0 z-[60] bg-[#1a1a2e] flex flex-col items-center justify-center p-4"
+    >
+      <h1
+        class="text-5xl md:text-7xl text-purple-400 font-bold retro-font mb-2 text-center drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+      >
+        DICEMANCER
+      </h1>
+      <p class="text-gray-400 mb-12 text-lg">
+        Par <span class="text-yellow-400 font-bold">VoodooX</span>
+      </p>
+
+      <div class="w-full max-w-md space-y-4" id="slots-container">
+        <!-- Slots generated by JS -->
+      </div>
+
+      <div class="mt-8 flex gap-4">
+        <button
+          id="lang-toggle-menu"
+          class="text-gray-500 hover:text-white text-xs uppercase font-bold border border-gray-700 px-3 py-1 rounded"
+        >
+          FR
+        </button>
+      </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div
+      id="game-over-screen"
+      class="hidden absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-6 text-center"
+    >
+      <h1
+        class="text-4xl text-red-600 font-bold retro-font mb-4 animate-pulse"
+        data-i18n="game_over"
+      >
+        GAME OVER
+      </h1>
+      <p class="text-gray-300 mb-8" data-i18n="perished">
+        Vous avez péri dans le donjon...
+      </p>
+      <div class="text-xl mb-8 text-yellow-400 font-bold">
+        <span data-i18n="monsters_defeated">Monstres vaincus :</span>
+        <span id="final-score">0</span>
+      </div>
+      <button
+        onclick="resetGame()"
+        class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-[0_4px_0_#991b1b] active:shadow-none active:translate-y-1 transition-all"
+        data-i18n="new_game"
+      >
+        NOUVELLE PARTIE
+      </button>
+      <button
+        onclick="exitToMenu()"
+        class="mt-4 text-gray-400 hover:text-white underline text-sm"
+        data-i18n="exit_menu"
+      >
+        Quitter vers le Menu
+      </button>
+    </div>
+
+    <!-- GAME UI (Hidden by default until slot load) -->
+    <div id="game-ui" class="flex-1 flex flex-col h-full hidden">
+      <!-- Top Status Bar -->
+      <header
+        class="bg-slate-900 p-1.5 md:p-3 flex flex-col shadow-lg z-10 border-b border-slate-700 gap-1 md:gap-2 shrink-0"
+      >
+        <div class="flex justify-between items-center w-full">
+          <!-- HP -->
+          <div class="flex items-center gap-1.5 md:gap-2 shrink-0">
+            <div
+              class="w-7 h-7 md:w-10 md:h-10 game-icon-wrapper shrink-0"
+              data-img="icon_heart.png"
+              data-icon="fas fa-heart"
+              data-color="text-red-500"
+            ></div>
+            <div
+              class="w-20 sm:w-24 md:w-40 bg-gray-700 h-5 md:h-8 rounded-full overflow-hidden relative shrink-0"
+            >
+              <div
+                id="hp-bar"
+                class="bg-red-500 h-full w-full transition-all duration-300"
+              ></div>
+              <span
+                id="hp-text"
+                class="absolute inset-0 text-[10px] md:text-xs flex items-center justify-center font-bold text-white shadow-black drop-shadow-md"
+                >50/50</span
+              >
+            </div>
+          </div>
+          <!-- Stats -->
+          <div
+            class="flex gap-2 md:gap-4 text-xs md:text-sm font-bold items-center shrink-0"
+          >
+            <div class="flex items-center gap-1 text-yellow-400">
+              <div
+                class="w-5 h-5 md:w-10 md:h-10 game-icon-wrapper inline-block"
+                data-img="icon_coin.png"
+                data-icon="fas fa-coins"
+                data-color="text-yellow-400"
+              ></div>
+              <span id="gold-display">0</span>
+              <button
+                id="btn-activate-ring"
+                class="hidden ml-1 md:ml-2 w-4 h-4 md:w-5 md:h-5 bg-yellow-600 rounded-full flex items-center justify-center text-[8px] md:text-[10px] text-white hover:bg-yellow-500 transition-colors"
+                title="Activer Bague d'Or (1/j)"
+              >
+                <i class="fas fa-bolt"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-1 text-gray-400">
+              <div
+                class="w-5 h-5 md:w-10 md:h-10 game-icon-wrapper inline-block"
+                data-img="icon_skull.png"
+                data-icon="fas fa-skull"
+                data-color="text-gray-400"
+              ></div>
+              <span id="kill-display">0</span>
+            </div>
+          </div>
+          <!-- Controls -->
+          <div class="flex gap-1 md:gap-3 shrink-0">
+            <button
+              id="lang-toggle"
+              class="w-6 h-6 md:w-8 md:h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 rounded text-[10px] md:text-xs font-bold text-white"
+              title="Changer de langue"
+            >
+              FR
+            </button>
+            <button
+              id="btn-manual-save"
+              class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-green-400"
+              title="Sauvegarder"
+            >
+              <i class="fas fa-save"></i>
+            </button>
+            <button
+              onclick="exitToMenu()"
+              class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-400"
+              title="Menu"
+            >
+              <i class="fas fa-door-open"></i>
+            </button>
+            <button
+              id="music-toggle"
+              class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white"
+              title="Musique"
+            >
+              <i class="fas fa-volume-mute"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- BUFF BARS -->
+        <div id="defense-buff-container" class="w-full hidden">
+          <div class="flex justify-between text-[10px] text-blue-300 mb-1">
+            <div class="flex items-center gap-1">
+              <div
+                class="w-3 h-3 game-icon-wrapper inline-block"
+                data-img="potion_defense.png"
+                data-icon="fas fa-shield-alt"
+                data-color="text-blue-300"
+              ></div>
+              <span data-i18n="defense_buff">Potion Défense</span>
+            </div>
+            <span id="defense-timer">0s</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div
+              id="defense-bar"
+              class="bg-blue-500 h-full w-full transition-all duration-100"
+            ></div>
+          </div>
+        </div>
+        <div id="regen-buff-container" class="w-full hidden mt-0.5">
+          <div class="flex justify-between text-[10px] text-green-300 mb-1">
+            <div class="flex items-center gap-1">
+              <div
+                class="w-3 h-3 game-icon-wrapper inline-block"
+                data-img="potion_regen.png"
+                data-icon="fas fa-leaf"
+                data-color="text-green-300"
+              ></div>
+              <span data-i18n="regen_buff">Régénération</span>
+            </div>
+            <span id="regen-timer">0s</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div
+              id="regen-bar"
+              class="bg-green-500 h-full w-full transition-all duration-100"
+            ></div>
+          </div>
+        </div>
+        <div id="gold-buff-container" class="w-full hidden mt-0.5">
+          <div class="flex justify-between text-[10px] text-yellow-300 mb-1">
+            <div class="flex items-center gap-1">
+              <div
+                class="w-3 h-3 game-icon-wrapper inline-block"
+                data-img="item_ring_gold.png"
+                data-icon="fas fa-coins"
+                data-color="text-yellow-300"
+              ></div>
+              <span data-i18n="gold_ring_buff">Bague d'Or</span>
+            </div>
+            <span id="gold-timer">0s</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div
+              id="gold-bar"
+              class="bg-yellow-500 h-full w-full transition-all duration-100"
+            ></div>
+          </div>
+        </div>
+        <div id="scepter-buff-container" class="w-full hidden mt-0.5">
+          <div class="flex justify-between text-[10px] text-cyan-300 mb-1">
+            <div class="flex items-center gap-1">
+              <div
+                class="w-3 h-3 game-icon-wrapper inline-block"
+                data-img="item_scepter.png"
+                data-icon="fas fa-wand-magic-sparkles"
+                data-color="text-cyan-300"
+              ></div>
+              <span data-i18n="scepter_buff">Invocation (4 dés)</span>
+            </div>
+            <span id="scepter-timer">0s</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div
+              id="scepter-bar"
+              class="bg-cyan-500 h-full w-full transition-all duration-100"
+            ></div>
+          </div>
+        </div>
+        <div id="amulet-buff-container" class="w-full hidden mt-0.5">
+          <div class="flex justify-between text-[10px] text-purple-300 mb-1">
+            <div class="flex items-center gap-1">
+              <div
+                class="w-3 h-3 game-icon-wrapper inline-block"
+                data-img="item_shield.png"
+                data-icon="fas fa-shield-cat"
+                data-color="text-purple-300"
+              ></div>
+              <span data-i18n="magic_shield_buff">Bouclier Magique</span>
+            </div>
+            <span id="amulet-timer">0s</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div
+              id="amulet-bar"
+              class="bg-purple-500 h-full w-full transition-all duration-100"
+            ></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main
+        class="flex-1 relative overflow-y-auto custom-scroll bg-slate-800 w-full"
+        id="main-container"
+      >
+        <!-- Tab 1: Combat -->
+        <section
+          id="tab-combat"
+          class="flex flex-col items-center justify-center min-h-full p-4 space-y-4 w-full overflow-x-hidden"
+          style="
+            background-image: url('./assets/bg.png');
+            background-color: #1a1a2e;
+            background-size: 20%;
+          "
+        >
+          <div class="relative w-full max-w-xs flex flex-col items-center mt-6">
+            <div
+              id="boss-label"
+              class="hidden absolute -top-10 bg-red-600 text-white text-xs px-3 py-1 rounded retro-font animate-pulse whitespace-nowrap z-20 border-2 border-white/20 shadow-lg"
+              data-i18n="boss_label"
+            >
+              BOSS
+            </div>
+            <div
+              id="monster-container"
+              class="w-48 h-48 md:w-60 md:h-60 bg-slate-900 rounded-xl flex items-center justify-center mb-4 relative transition-all duration-300 overflow-hidden shadow-2xl border-4 border-slate-600"
+            >
+              <i class="fas fa-ghost text-6xl text-gray-300"></i>
+            </div>
+            <div
+              class="w-full bg-gray-900 rounded-full h-5 md:h-6 border border-gray-600 relative overflow-hidden mb-2 shadow-inner"
+            >
+              <div
+                id="monster-hp-bar"
+                class="bg-purple-600 h-full w-full transition-all duration-200"
+              ></div>
+              <span
+                id="monster-hp-text"
+                class="absolute inset-0 flex items-center justify-center text-[10px] md:text-xs font-bold text-white shadow-black drop-shadow-md"
+                >HP: 5</span
+              >
+            </div>
+            <div
+              id="monster-name"
+              class="text-red-400 text-sm font-bold bg-slate-900/80 px-3 py-1 rounded-full"
+              data-i18n="monster_dungeon"
+            >
+              Monstre du Donjon
+            </div>
+          </div>
+
+          <div class="flex gap-2 md:gap-4 justify-center py-2 flex-wrap">
+            <div id="die-1" class="dice-face">
+              <i class="fas fa-question text-gray-400"></i>
+            </div>
+            <div id="die-2" class="dice-face">
+              <i class="fas fa-question text-gray-400"></i>
+            </div>
+            <div id="die-3" class="dice-face">
+              <i class="fas fa-question text-gray-400"></i>
+            </div>
+            <div
+              id="die-4"
+              class="dice-face hidden border-2 border-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+            >
+              <i class="fas fa-question text-cyan-400"></i>
+            </div>
+          </div>
+
+          <div
+            class="text-center h-6 text-xs md:text-sm font-bold text-yellow-300 px-2 truncate w-full"
+            id="combat-log"
+            data-i18n="ready_combat"
+          >
+            Prêt au combat...
+          </div>
+
+          <button
+            id="btn-attack"
+            class="w-full max-w-xs bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg shadow-[0_4px_0_rgb(55,48,163)] active:shadow-none active:translate-y-1 transition-all text-lg md:text-xl uppercase retro-font"
+            data-i18n="btn_attack"
+          >
+            ATTAQUER
+          </button>
+        </section>
+
+        <!-- Tab 2: Forge -->
+        <section
+          id="tab-forge"
+          class="hidden p-4 pb-24 w-full"
+          style="
+            background-image: url('./assets/bg.png');
+            background-color: #1a1a2e;
+            background-size: 20%;
+          "
+        >
+          <h2
+            class="text-center text-xl font-bold mb-4 retro-font text-orange-400"
+            data-i18n="forge_title"
+          >
+            La Forge
+          </h2>
+          <p
+            class="text-xs text-center text-gray-400 mb-6"
+            data-i18n="forge_desc"
+          >
+            Fusionnez vos gemmes pour augmenter leur qualité.
+          </p>
+          <div id="crafting-container" class="space-y-6 max-w-md mx-auto"></div>
+        </section>
+
+        <!-- Tab 3: Shop -->
+        <section
+          id="tab-shop"
+          class="hidden p-4 pb-24 w-full"
+          style="
+            background-image: url('./assets/bg.png');
+            background-color: #1a1a2e;
+            background-size: 20%;
+          "
+        >
+          <div class="max-w-md mx-auto">
+            <h2
+              class="text-center text-xl font-bold mb-4 retro-font text-yellow-400"
+              data-i18n="shop_title"
+            >
+              Marchand & Trésors
+            </h2>
+            <div class="grid grid-cols-1 gap-4 mb-6">
+              <!-- Potions -->
+              <div
+                class="bg-slate-700 p-3 md:p-4 rounded-lg flex items-center justify-between border border-slate-600"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 md:w-16 md:h-16 game-icon-wrapper shrink-0"
+                    data-img="potion_health.png"
+                    data-icon="fas fa-flask"
+                    data-color="text-red-500"
+                  ></div>
+                  <div>
+                    <div
+                      class="font-bold text-sm md:text-base"
+                      data-i18n="potion_health_name"
+                    >
+                      Potion de Soin
+                    </div>
+                    <div
+                      class="text-[10px] md:text-xs text-gray-400"
+                      data-i18n="potion_health_desc"
+                    >
+                      Restaure 15 PV
+                    </div>
+                  </div>
+                </div>
+                <button
+                  id="btn-buy-potion"
+                  class="bg-green-600 hover:bg-green-500 text-white px-3 py-2 rounded text-xs md:text-sm font-bold shrink-0"
+                >
+                  15 <i class="fas fa-coins text-yellow-300"></i>
+                </button>
+              </div>
+              <div
+                class="bg-slate-700 p-3 md:p-4 rounded-lg flex items-center justify-between border border-slate-600"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 md:w-16 md:h-16 game-icon-wrapper shrink-0"
+                    data-img="potion_defense.png"
+                    data-icon="fas fa-shield-halved"
+                    data-color="text-blue-400"
+                  ></div>
+                  <div>
+                    <div
+                      class="font-bold text-sm md:text-base"
+                      data-i18n="potion_defense_name"
+                    >
+                      Potion Défense
+                    </div>
+                    <div
+                      class="text-[10px] md:text-xs text-gray-400"
+                      data-i18n="potion_defense_desc"
+                    >
+                      -1 Dégâts reçus (1 min)
+                    </div>
+                  </div>
+                </div>
+                <button
+                  id="btn-buy-defense"
+                  class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded text-xs md:text-sm font-bold shrink-0"
+                >
+                  25 <i class="fas fa-coins text-yellow-300"></i>
+                </button>
+              </div>
+              <div
+                class="bg-slate-700 p-3 md:p-4 rounded-lg flex items-center justify-between border border-slate-600"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 md:w-16 md:h-16 game-icon-wrapper shrink-0"
+                    data-img="potion_regen.png"
+                    data-icon="fas fa-leaf"
+                    data-color="text-green-400"
+                  ></div>
+                  <div>
+                    <div
+                      class="font-bold text-sm md:text-base"
+                      data-i18n="potion_regen_name"
+                    >
+                      Potion Régénération
+                    </div>
+                    <div
+                      class="text-[10px] md:text-xs text-gray-400"
+                      data-i18n="potion_regen_desc"
+                    >
+                      +2 PV toutes les 2s (1 min)
+                    </div>
+                  </div>
+                </div>
+                <button
+                  id="btn-buy-regen"
+                  class="bg-green-600 hover:bg-green-500 text-white px-3 py-2 rounded text-xs md:text-sm font-bold flex flex-col items-center shrink-0"
+                >
+                  <div>30 <i class="fas fa-coins text-yellow-300"></i></div>
+                  <div id="regen-limit-text" class="text-[9px] text-white/80">
+                    5/5 J
+                  </div>
+                </button>
+              </div>
+            </div>
+            <h3
+              class="text-lg font-bold mb-2 text-purple-300 border-b border-gray-600 pb-2"
+              data-i18n="legendary_title"
+            >
+              Équipement Légendaire
+            </h3>
+            <div id="legendary-shop" class="space-y-4 pb-10"></div>
+            <div
+              id="victory-message"
+              class="hidden mt-8 text-center text-green-400 font-bold border border-green-500 p-4 rounded bg-green-900/20"
+              data-i18n="victory_msg"
+            >
+              Toutes les reliques sont acquises !<br />Vous êtes le maître du
+              Donjon.
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 4: Inventory -->
+        <section
+          id="tab-inventory"
+          class="hidden p-4 pb-24 w-full"
+          style="
+            background-image: url('./assets/bg.png');
+            background-color: #1a1a2e;
+            background-size: 20%;
+          "
+        >
+          <div class="max-w-md mx-auto">
+            <h2
+              class="text-center text-xl font-bold mb-4 retro-font text-blue-400"
+              data-i18n="inventory_title"
+            >
+              Inventaire
+            </h2>
+            <div id="inventory-grid" class="grid grid-cols-1 gap-2"></div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Bottom Navigation -->
+      <nav
+        class="bg-slate-900 border-t border-slate-700 flex justify-around p-1 pb-safe z-20 shrink-0"
+      >
+        <button
+          class="tab-btn active flex-1 py-1 md:py-2 rounded-lg flex flex-col items-center gap-1 text-[10px] md:text-sm font-bold text-gray-400 uppercase"
+          data-target="tab-combat"
+        >
+          <div
+            class="w-8 h-8 md:w-12 md:h-12 game-icon-wrapper mb-0.5"
+            data-img="nav_combat.png"
+            data-icon="fas fa-swords"
+            data-color="currentColor"
+          ></div>
+          <span data-i18n="nav_combat">Combat</span>
+        </button>
+        <button
+          class="tab-btn flex-1 py-1 md:py-2 rounded-lg flex flex-col items-center gap-1 text-[10px] md:text-sm font-bold text-gray-400 uppercase"
+          data-target="tab-inventory"
+        >
+          <div
+            class="w-8 h-8 md:w-12 md:h-12 game-icon-wrapper mb-0.5"
+            data-img="nav_inventory.png"
+            data-icon="fas fa-sack-dollar"
+            data-color="currentColor"
+          ></div>
+          <span data-i18n="nav_bag">Sac</span>
+        </button>
+        <button
+          class="tab-btn flex-1 py-1 md:py-2 rounded-lg flex flex-col items-center gap-1 text-[10px] md:text-sm font-bold text-gray-400 uppercase"
+          data-target="tab-forge"
+        >
+          <div
+            class="w-8 h-8 md:w-12 md:h-12 game-icon-wrapper mb-0.5"
+            data-img="nav_forge.png"
+            data-icon="fas fa-fire"
+            data-color="currentColor"
+          ></div>
+          <span data-i18n="nav_forge">Forge</span>
+        </button>
+        <button
+          class="tab-btn flex-1 py-1 md:py-2 rounded-lg flex flex-col items-center gap-1 text-[10px] md:text-sm font-bold text-gray-400 uppercase"
+          data-target="tab-shop"
+        >
+          <div
+            class="w-8 h-8 md:w-12 md:h-12 game-icon-wrapper mb-0.5"
+            data-img="nav_shop.png"
+            data-icon="fas fa-crown"
+            data-color="currentColor"
+          ></div>
+          <span data-i18n="nav_shop">Boutique</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Overlay Scripts -->
+    <script>
+      // --- I18N STRINGS ---
+      const STRINGS = {
+        fr: {
+          game_title: "Dicemancer",
+          game_over: "GAME OVER",
+          perished: "Vous avez péri dans le donjon...",
+          monsters_defeated: "Monstres vaincus :",
+          new_game: "NOUVELLE PARTIE",
+          exit_menu: "Retour au Menu",
+          menu_slot: "Emplacement",
+          menu_empty: "Vide",
+          menu_play: "Jouer",
+          menu_delete: "Effacer",
+          menu_last_played: "Joué : ",
+
+          potion_health_name: "Potion de Soin",
+          potion_health_desc: "Restaure 15 PV",
+          potion_defense_name: "Potion Défense",
+          potion_defense_desc: "-1 Dégâts reçus (1 min)",
+          potion_regen_name: "Potion Régénération",
+          potion_regen_desc: "+2 PV toutes les 2s (1 min)",
+          defense_buff: "Potion Défense",
+          regen_buff: "Régénération",
+          gold_ring_buff: "Bague d'Or",
+          scepter_buff: "Invocateur (4 dés)",
+          magic_shield_buff: "Bouclier Magique",
+          boss_label: "BOSS",
+          monster_dungeon: "Monstre du Donjon",
+          boss_name: "SEIGNEUR DU DONJON",
+          ready_combat: "Prêt au combat...",
+          btn_attack: "ATTAQUER",
+          forge_title: "La Forge",
+          forge_desc: "Fusionnez vos gemmes pour augmenter leur qualité.",
+          shop_title: "Marchand & Trésors",
+          legendary_title: "Équipement Légendaire",
+          victory_msg:
+            "Toutes les reliques sont acquises !<br>Vous êtes le maître du Donjon.",
+          inventory_title: "Inventaire",
+          nav_combat: "Combat",
+          nav_bag: "Sac",
+          nav_forge: "Forge",
+          nav_shop: "Boutique",
+
+          // Items
+          item_armor_name: "Armure Céleste",
+          item_armor_desc: "+5 PV MAX.",
+          item_sword_name: "Épée Infernale",
+          item_sword_desc: "10% vol de vie (3 PV).",
+          item_helm_name: "Casque Solaire",
+          item_helm_desc: "+5 PV MAX.",
+          item_boots_name: "Bottes Sylvestres",
+          item_boots_desc: "+5 PV MAX.",
+          item_shield_name: "Bouclier du Vide",
+          item_shield_desc: "+5 PV MAX.",
+          item_ring_name: "Anneau de Vitalité",
+          item_ring_desc: "+20 PV MAX.",
+          item_amulet_name: "Amulette de Protection",
+          item_amulet_desc: "10% chance de bouclier magique (10s).",
+          item_axe_name: "Hache Tranche-Monstres",
+          item_axe_desc: "Soigne 50 PV tous les 500 monstres tués.",
+          item_gold_ring_name: "Bague Magique en Or",
+          item_gold_ring_desc: "ACTIVABLE: Or gagné x2 (15min, 1x/jour).",
+          item_hammer_name: "Marteau de Guerre",
+          item_hammer_desc: "20% chance Invulnérabilité (1 min).",
+          item_cape_name: "Cape du Maître du Donjon",
+          item_cape_desc: "L'objet ultime. Aucun bonus.",
+          item_scepter_name: "Sceptre d'Invocation",
+          item_scepter_desc: "10% chance d'avoir 1 dé en + pendant 1 min.",
+
+          // Dynamic
+          acquired: "ACQUIS",
+          need_gold: "Or",
+          need_gems: "Gemmes",
+          fusing: "En cours de fusion...",
+          to: "Vers :",
+          toast_reset: "Réinitialisation effectuée !",
+          toast_save: "Sauvegarde effectuée !",
+          toast_ring_active: "Bague activée : Or x2 pendant 15 min !",
+          toast_ring_used:
+            "La bague a déjà été utilisée aujourd'hui. Revenez demain !",
+          toast_limit_daily:
+            "Limite journalière atteinte (5/5) ! Revenez demain.",
+          toast_health_max: "Santé déjà au maximum !",
+          toast_no_gold: "Pas assez d'or !",
+          toast_no_gems: "Pas assez de gemmes !",
+
+          // Logs
+          log_win: "Victoire !",
+          log_fail: "Échec ! -{val} PV",
+          log_block: "Attaque bloquée !",
+          log_invuln: "Invulnérable !",
+          log_shield: "Bouclier (-1 Dégât)",
+          log_vamp: "Vampirisme! +{val} PV",
+          log_magic_shield: "BOUCLIER MAGIQUE !",
+          log_supreme_shield: "BOUCLIER SUPRÊME (1 min)!",
+          log_scepter_proc: "INVOCATION (60s) !",
+          log_loot: "+{val} Or",
+          log_loot_x2: "+{val} Or (x2)",
+          log_gem: ", {val} Gemme {color}",
+          log_potion: ", Potion (+5 PV)!",
+          log_level_100: " | NIVEAU 100: PV MAX +10!",
+          log_axe_heal: "HACHE: +50 PV !",
+
+          q_mediocre: "Médiocre",
+          q_normal: "Normale",
+          q_flawless: "Sans Défaut",
+          q_perfect: "Parfaite",
+          qs_mediocre: "Méd",
+          qs_normal: "Norm",
+          qs_flawless: "S.D.",
+          qs_perfect: "Parf",
+          c_blue: "Saphir",
+          c_red: "Rubis",
+          c_yellow: "Topaze",
+          c_green: "Émeraude",
+          c_violet: "Améthyste",
+          mob_spider: "Araignée",
+          mob_ghost: "Fantôme",
+          mob_dragon: "Dragon",
+          mob_skeleton: "Squelette",
+          mob_abomination: "Abomination",
+          mob_troll: "Troll",
+          mob_witch: "Sorcière",
+          mob_boss: "Boss",
+        },
+        en: {
+          game_title: "Dicemancer",
+          game_over: "GAME OVER",
+          perished: "You perished in the dungeon...",
+          monsters_defeated: "Monsters defeated:",
+          new_game: "NEW GAME",
+          exit_menu: "Exit to Menu",
+          menu_slot: "Slot",
+          menu_empty: "Empty",
+          menu_play: "Play",
+          menu_delete: "Delete",
+          menu_last_played: "Last Played: ",
+
+          potion_health_name: "Health Potion",
+          potion_health_desc: "Restores 15 HP",
+          potion_defense_name: "Defense Potion",
+          potion_defense_desc: "-1 Damage taken (1 min)",
+          potion_regen_name: "Regeneration Potion",
+          potion_regen_desc: "+2 HP every 2s (1 min)",
+          defense_buff: "Defense Potion",
+          regen_buff: "Regeneration",
+          gold_ring_buff: "Gold Ring",
+          scepter_buff: "Summoner (4 Dice)",
+          magic_shield_buff: "Magic Shield",
+          boss_label: "BOSS",
+          monster_dungeon: "Dungeon Monster",
+          boss_name: "DUNGEON LORD",
+          ready_combat: "Ready for battle...",
+          btn_attack: "ATTACK",
+          forge_title: "The Forge",
+          forge_desc: "Fuse gems to improve their quality.",
+          shop_title: "Merchant & Treasures",
+          legendary_title: "Legendary Equipment",
+          victory_msg: "All relics acquired!<br>You are the Dungeon Master.",
+          inventory_title: "Inventory",
+          nav_combat: "Combat",
+          nav_bag: "Bag",
+          nav_forge: "Forge",
+          nav_shop: "Shop",
+
+          // Items
+          item_armor_name: "Celestial Armor",
+          item_armor_desc: "+5 MAX HP.",
+          item_sword_name: "Infernal Sword",
+          item_sword_desc: "10% Lifesteal (3 HP).",
+          item_helm_name: "Solar Helm",
+          item_helm_desc: "+5 MAX HP.",
+          item_boots_name: "Sylvan Boots",
+          item_boots_desc: "+5 MAX HP.",
+          item_shield_name: "Void Shield",
+          item_shield_desc: "+5 MAX HP.",
+          item_ring_name: "Vitality Ring",
+          item_ring_desc: "+20 MAX HP.",
+          item_amulet_name: "Protection Amulet",
+          item_amulet_desc: "10% chance Magic Shield (10s).",
+          item_axe_name: "Monster-Slayer Axe",
+          item_axe_desc: "Heals 50 HP every 500 kills.",
+          item_gold_ring_name: "Magic Gold Ring",
+          item_gold_ring_desc: "ACTIVE: Gold x2 (15min, 1x/day).",
+          item_hammer_name: "War Hammer",
+          item_hammer_desc: "20% chance Invulnerability (1 min).",
+          item_cape_name: "Dungeon Master Cape",
+          item_cape_desc: "The ultimate item. No bonus.",
+          item_scepter_name: "Summoner's Scepter",
+          item_scepter_desc: "10% chance for +1 die for 1 min.",
+
+          // Dynamic
+          acquired: "OWNED",
+          need_gold: "Gold",
+          need_gems: "Gems",
+          fusing: "Fusing...",
+          to: "To:",
+          toast_reset: "Game Reset!",
+          toast_save: "Game Saved!",
+          toast_ring_active: "Ring Active: Gold x2 for 15 min!",
+          toast_ring_used: "Ring already used today. Come back tomorrow!",
+          toast_limit_daily: "Daily limit reached (5/5)! Come back tomorrow.",
+          toast_health_max: "Health already full!",
+          toast_no_gold: "Not enough gold!",
+          toast_no_gems: "Not enough gems!",
+
+          // Logs
+          log_win: "Victory!",
+          log_fail: "Failed! -{val} HP",
+          log_block: "Attack blocked!",
+          log_invuln: "Invulnerable!",
+          log_shield: "Shield (-1 Damage)",
+          log_vamp: "Vampirism! +{val} HP",
+          log_magic_shield: "MAGIC SHIELD!",
+          log_supreme_shield: "SUPREME SHIELD (1 min)!",
+          log_scepter_proc: "SUMMONING (60s)!",
+          log_loot: "+{val} Gold",
+          log_loot_x2: "+{val} Gold (x2)",
+          log_gem: ", {val} {color} Gem",
+          log_potion: ", Potion (+5 HP)!",
+          log_level_100: " | LEVEL 100: MAX HP +10!",
+          log_axe_heal: "AXE: +50 HP!",
+
+          q_mediocre: "Mediocre",
+          q_normal: "Normal",
+          q_flawless: "Flawless",
+          q_perfect: "Perfect",
+          qs_mediocre: "Med",
+          qs_normal: "Norm",
+          qs_flawless: "Flaw",
+          qs_perfect: "Perf",
+          c_blue: "Sapphire",
+          c_red: "Ruby",
+          c_yellow: "Topaz",
+          c_green: "Emerald",
+          c_violet: "Amethyst",
+          mob_spider: "Spider",
+          mob_ghost: "Ghost",
+          mob_dragon: "Dragon",
+          mob_skeleton: "Skeleton",
+          mob_abomination: "Abomination",
+          mob_troll: "Troll",
+          mob_witch: "Witch",
+          mob_boss: "Boss",
+        },
+      };
+
+      // --- ASSET CONFIGURATION ---
+      const ASSETS_PATH = "assets/";
+
+      // --- GAME CONFIGURATION ---
+      const CONFIG = {
+        baseMaxHP: 50,
+        healAmount: 15,
+        potionCost: 15,
+        defenseCost: 25,
+        defenseDuration: 60000,
+        regenCost: 30,
+        regenDuration: 60000,
+        regenTick: 2000,
+        regenAmount: 2,
+        regenLimit: 5,
+        goldBoostDuration: 900000,
+        amuletDuration: 10000,
+        hammerDuration: 60000,
+        scepterDuration: 60000,
+        colors: ["blue", "red", "yellow", "green", "violet"],
+        qualities: ["mediocre", "normal", "flawless", "perfect"],
+        fusionTime: 5000,
+        items: [
+          {
+            id: "armor",
+            nameKey: "item_armor_name",
+            descKey: "item_armor_desc",
+            cost: 15,
+            gemColor: "blue",
+            icon: "fa-shield-halved",
+            img: "item_armor.png",
+          },
+          {
+            id: "sword",
+            nameKey: "item_sword_name",
+            descKey: "item_sword_desc",
+            cost: 20,
+            gemColor: "red",
+            icon: "fa-khanda",
+            img: "item_sword.png",
+          },
+          {
+            id: "helm",
+            nameKey: "item_helm_name",
+            descKey: "item_helm_desc",
+            cost: 15,
+            gemColor: "yellow",
+            icon: "fa-helmet-safety",
+            img: "item_helm.png",
+          },
+          {
+            id: "boots",
+            nameKey: "item_boots_name",
+            descKey: "item_boots_desc",
+            cost: 15,
+            gemColor: "green",
+            icon: "fa-shoe-prints",
+            img: "item_boots.png",
+          },
+          {
+            id: "shield",
+            nameKey: "item_shield_name",
+            descKey: "item_shield_desc",
+            cost: 20,
+            gemColor: "violet",
+            icon: "fa-shield-cat",
+            img: "item_shield.png",
+          },
+          {
+            id: "ring",
+            nameKey: "item_ring_name",
+            descKey: "item_ring_desc",
+            costs: [
+              { c: "yellow", a: 5 },
+              { c: "green", a: 5 },
+            ],
+            icon: "fa-ring",
+            img: "item_ring.png",
+          },
+          {
+            id: "amulet",
+            nameKey: "item_amulet_name",
+            descKey: "item_amulet_desc",
+            costs: [
+              { c: "red", a: 10 },
+              { c: "violet", a: 10 },
+            ],
+            icon: "fa-shield-heart",
+            img: "item_amulet.png",
+          },
+          {
+            id: "scepter",
+            nameKey: "item_scepter_name",
+            descKey: "item_scepter_desc",
+            cost: 2,
+            gemColor: "blue",
+            icon: "fa-wand-magic-sparkles",
+            img: "item_scepter.png",
+          },
+          {
+            id: "axe",
+            nameKey: "item_axe_name",
+            descKey: "item_axe_desc",
+            costs: [
+              { c: "red", a: 5 },
+              { c: "blue", a: 5 },
+              { c: "yellow", a: 5 },
+            ],
+            icon: "fa-axe-battle",
+            img: "item_axe.png",
+          },
+          {
+            id: "gold_ring",
+            nameKey: "item_gold_ring_name",
+            descKey: "item_gold_ring_desc",
+            costs: [
+              { c: "violet", a: 1 },
+              { c: "green", a: 1 },
+            ],
+            goldCost: 50,
+            icon: "fa-ring",
+            img: "item_ring_gold.png",
+          },
+          {
+            id: "hammer",
+            nameKey: "item_hammer_name",
+            descKey: "item_hammer_desc",
+            costs: [
+              { c: "red", a: 10 },
+              { c: "yellow", a: 10 },
+              { c: "green", a: 10 },
+              { c: "blue", a: 10 },
+              { c: "violet", a: 10 },
+            ],
+            icon: "fa-hammer",
+            img: "item_hammer.png",
+          },
+          {
+            id: "cape",
+            nameKey: "item_cape_name",
+            descKey: "item_cape_desc",
+            costs: [
+              { c: "red", a: 20 },
+              { c: "yellow", a: 20 },
+              { c: "green", a: 20 },
+              { c: "blue", a: 20 },
+              { c: "violet", a: 20 },
+            ],
+            goldCost: 400,
+            icon: "fa-user-secret",
+            img: "item_cape.png",
+          },
+        ],
+      };
+
+      const COLOR_CLASSES = {
+        blue: "gem-blue",
+        red: "gem-red",
+        yellow: "gem-yellow",
+        green: "gem-green",
+        violet: "gem-violet",
+      };
+
+      // --- GAME STATE ---
+      let currentSlotId = null;
+      let gameActive = false; // Flag to prevent loop in menu
+      let menuLang = "fr"; // Language for the menu before save load
+
+      let state = {
+        lang: "fr",
+        hp: CONFIG.baseMaxHP,
+        gold: 0,
+        kills: 0,
+        inventory: {},
+        itemsBought: [],
+        craftingQueue: [],
+        defenseBuffEnd: 0,
+        regenBuffEnd: 0,
+        goldBoostEnd: 0,
+        scepterBuffEnd: 0,
+        lastRegenTick: 0,
+        amuletBuffEnd: 0,
+        dailyRegenDate: "",
+        dailyRegenCount: 0,
+        lastDailyRingUse: "",
+        currentMonster: null,
+        audioEnabled: false,
+        lastPlayed: null, // New Meta field
+      };
+
+      // Helper to generate default state
+      function getDefaultState() {
+        const s = {
+          lang: menuLang, // Use current menu lang preference
+          hp: CONFIG.baseMaxHP,
+          gold: 0,
+          kills: 0,
+          inventory: {},
+          itemsBought: [],
+          craftingQueue: [],
+          defenseBuffEnd: 0,
+          regenBuffEnd: 0,
+          goldBoostEnd: 0,
+          scepterBuffEnd: 0,
+          lastRegenTick: 0,
+          amuletBuffEnd: 0,
+          dailyRegenDate: new Date().toDateString(),
+          dailyRegenCount: 0,
+          lastDailyRingUse: "",
+          currentMonster: null,
+          audioEnabled: false,
+          lastPlayed: new Date().toLocaleString(),
+        };
+        CONFIG.colors.forEach((c) => {
+          s.inventory[c] = {};
+          CONFIG.qualities.forEach((q) => (s.inventory[c][q] = 0));
+        });
+        return s;
+      }
+
+      // --- I18N HELPER ---
+      function t(key, params = {}) {
+        let langToUse = gameActive ? state.lang : menuLang;
+        let str = STRINGS[langToUse][key] || key;
+        for (const p in params) str = str.replace(`{${p}}`, params[p]);
+        return str;
+      }
+
+      function updateStaticTranslations() {
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          el.innerHTML = t(key);
+        });
+        document.title = t("game_title");
+        document.getElementById("lang-toggle").innerText =
+          state.lang === "fr" ? "EN" : "FR";
+        document.getElementById("lang-toggle-menu").innerText =
+          menuLang === "fr" ? "EN" : "FR";
+      }
+
+      function setLanguage(lang) {
+        if (gameActive) state.lang = lang;
+        else menuLang = lang;
+        updateStaticTranslations();
+        if (gameActive) {
+          renderShop();
+          renderInventory();
+          renderCrafting();
+          renderMonster();
+          updateUI();
+          saveGame();
+        } else {
+          renderMainMenu();
+        }
+      }
+
+      // --- ASSET HELPER ---
+      function applyIconToElement(
+        element,
+        imgName,
+        faIconClass,
+        fallbackColor = ""
+      ) {
+        element.innerHTML = "";
+        element.classList.add(
+          "relative",
+          "flex",
+          "items-center",
+          "justify-center"
+        );
+        if (imgName) {
+          const img = document.createElement("img");
+          img.src = `${ASSETS_PATH}${imgName}`;
+          img.className =
+            "w-full h-full object-contain absolute inset-0 transition-opacity";
+          img.alt = imgName;
+          img.onerror = () => {
+            img.style.display = "none";
+            const icon = element.querySelector("i");
+            if (icon) icon.style.display = "block";
+          };
+          element.appendChild(img);
+        }
+        const i = document.createElement("i");
+        i.className = `${faIconClass} ${fallbackColor}`;
+        if (!imgName) {
+          i.style.fontSize = "100%";
+          i.style.display = "block";
+        } else {
+          i.style.fontSize = "70%";
+          i.style.display = "none";
+        }
+        element.appendChild(i);
+      }
+
+      function initStaticIcons() {
+        document.querySelectorAll(".game-icon-wrapper").forEach((el) => {
+          applyIconToElement(
+            el,
+            el.dataset.img,
+            el.dataset.icon,
+            el.dataset.color
+          );
+        });
+      }
+
+      // --- AUDIO ENGINE ---
+      const AudioEngine = {
+        ctx: null,
+        musicInterval: null,
+        init: function () {
+          if (!this.ctx)
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        },
+        playTone: function (freq, type, duration, vol = 0.1) {
+          if (!state.audioEnabled || !this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(
+            0.01,
+            this.ctx.currentTime + duration
+          );
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        },
+        startMusic: function () {
+          if (!state.audioEnabled || !this.ctx || this.musicInterval) return;
+          const sequence = [
+            { f: 146.83, d: 0.4 },
+            { f: 220.0, d: 0.4 },
+            { f: 261.63, d: 0.4 },
+            { f: 174.61, d: 0.4 },
+            { f: 146.83, d: 0.4 },
+            { f: 220.0, d: 0.4 },
+            { f: 293.66, d: 0.4 },
+            { f: 220.0, d: 0.4 },
+            { f: 130.81, d: 0.4 },
+            { f: 196.0, d: 0.4 },
+            { f: 261.63, d: 0.4 },
+            { f: 196.0, d: 0.4 },
+            { f: 110.0, d: 0.4 },
+            { f: 164.81, d: 0.4 },
+            { f: 220.0, d: 0.4 },
+            { f: 164.81, d: 0.4 },
+          ];
+          let idx = 0;
+          this.musicInterval = setInterval(() => {
+            if (!state.audioEnabled) {
+              this.stopMusic();
+              return;
+            }
+            const note = sequence[idx];
+            this.playTone(note.f, "triangle", 0.6, 0.05);
+            if (idx % 2 === 0) this.playTone(note.f * 2, "sine", 0.6, 0.03);
+            idx = (idx + 1) % sequence.length;
+          }, 400);
+        },
+        stopMusic: function () {
+          if (this.musicInterval) {
+            clearInterval(this.musicInterval);
+            this.musicInterval = null;
+          }
+        },
+        playAttack: function () {
+          this.playTone(150, "sawtooth", 0.1, 0.2);
+        },
+        playHit: function () {
+          this.playTone(100, "square", 0.2, 0.3);
+        },
+        playWin: function () {
+          this.playTone(440, "sine", 0.1);
+          setTimeout(() => this.playTone(554, "sine", 0.1), 100);
+          setTimeout(() => this.playTone(659, "sine", 0.2), 200);
+        },
+        playGold: function () {
+          this.playTone(1200, "sine", 0.1, 0.1);
+        },
+        playCraft: function () {
+          this.playTone(300, "triangle", 0.5, 0.1);
+        },
+        playBoss: function () {
+          this.playTone(50, "sawtooth", 1.0, 0.3);
+        },
+        playGameOver: function () {
+          this.playTone(200, "sawtooth", 0.5);
+          setTimeout(() => this.playTone(150, "sawtooth", 0.5), 400);
+          setTimeout(() => this.playTone(100, "sawtooth", 1.0), 800);
+        },
+        playBuff: function () {
+          this.playTone(800, "sine", 0.5, 0.1);
+          setTimeout(() => this.playTone(1000, "sine", 0.5, 0.1), 200);
+        },
+        playMagicShield: function () {
+          this.playTone(600, "sine", 0.3);
+          setTimeout(() => this.playTone(1200, "sine", 0.5), 100);
+        },
+        playHealTick: function () {
+          this.playTone(900, "sine", 0.1, 0.05);
+        },
+        playClick: function () {
+          this.playTone(1200, "square", 0.05, 0.05);
+        },
+        playError: function () {
+          this.playTone(150, "sawtooth", 0.3, 0.1);
+        },
+      };
+
+      // --- INIT & MENU LOGIC ---
+
+      function initGame() {
+        initStaticIcons();
+        updateStaticTranslations();
+        renderMainMenu();
+
+        // Setup generic listeners
+        document
+          .getElementById("lang-toggle-menu")
+          .addEventListener("click", () => {
+            menuLang = menuLang === "fr" ? "en" : "fr";
+            setLanguage(menuLang);
+          });
+      }
+
+      function renderMainMenu() {
+        const container = document.getElementById("slots-container");
+        container.innerHTML = "";
+
+        [1, 2, 3].forEach((id) => {
+          const key = `dicemancer_slot_${id}`;
+          const savedData = localStorage.getItem(key);
+          let content = "";
+          let parsed = null;
+
+          if (savedData) {
+            parsed = JSON.parse(savedData);
+            content = `
+                    <div class="flex-1 text-left">
+                        <div class="font-bold text-indigo-300">${t(
+                          "menu_slot"
+                        )} ${id}</div>
+                        <div class="text-xs text-gray-400">${t(
+                          "monsters_defeated"
+                        )} ${parsed.kills}</div>
+                        <div class="text-[10px] text-gray-500">${t(
+                          "menu_last_played"
+                        )} ${parsed.lastPlayed || "N/A"}</div>
+                    </div>
+                  `;
+          } else {
+            content = `
+                    <div class="flex-1 text-left">
+                        <div class="font-bold text-gray-500">${t(
+                          "menu_slot"
+                        )} ${id}</div>
+                        <div class="text-xs text-gray-600">${t(
+                          "menu_empty"
+                        )}</div>
+                    </div>
+                  `;
+          }
+
+          const slotDiv = document.createElement("div");
+          slotDiv.className =
+            "slot-card bg-slate-800 p-3 rounded-lg flex items-center justify-between gap-3";
+
+          // Load Button
+          const btnLoad = document.createElement("button");
+          btnLoad.className = "flex-1 flex items-center gap-3 text-left";
+          btnLoad.innerHTML = content;
+          btnLoad.onclick = () => loadSlot(id);
+          slotDiv.appendChild(btnLoad);
+
+          // Delete Button (if data exists)
+          if (savedData) {
+            const btnDelete = document.createElement("button");
+            btnDelete.className =
+              "p-2 text-gray-500 hover:text-red-500 transition-colors";
+            btnDelete.innerHTML = '<i class="fas fa-trash"></i>';
+            btnDelete.onclick = (e) => {
+              e.stopPropagation();
+              if (confirm(t("menu_delete") + "?")) {
+                deleteSlot(id);
+              }
+            };
+            slotDiv.appendChild(btnDelete);
+          }
+
+          container.appendChild(slotDiv);
+        });
+      }
+
+      function loadSlot(id) {
+        currentSlotId = id;
+        const key = `dicemancer_slot_${id}`;
+        const savedData = localStorage.getItem(key);
+
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          state = { ...parsed };
+          // Ensure inventory structure is intact
+          CONFIG.colors.forEach((c) => {
+            if (!state.inventory[c]) {
+              state.inventory[c] = {};
+              CONFIG.qualities.forEach((q) => (state.inventory[c][q] = 0));
+            }
+          });
+        } else {
+          state = getDefaultState();
+        }
+
+        // Update meta
+        state.lastPlayed = new Date().toLocaleString();
+
+        gameActive = true;
+        saveGame(); // Save immediately to initialize file if new
+
+        // Switch Views
+        document.getElementById("main-menu").classList.add("hidden");
+        document.getElementById("game-ui").classList.remove("hidden");
+
+        // Initialize Game Logic
+        checkDailyLimit();
+        if (state.hp <= 0) showGameOver();
+        else if (!state.currentMonster) spawnMonster();
+
+        updateStaticTranslations(); // Update strings based on slot lang
+        updateUI();
+        setupTabs();
+        renderShop();
+        renderInventory();
+        renderCrafting();
+
+        // Initialize Audio based on saved state
+        const btn = document.getElementById("music-toggle");
+        if (state.audioEnabled) {
+          AudioEngine.init();
+          AudioEngine.startMusic();
+          btn.innerHTML =
+            '<div class="w-6 h-6 game-icon-wrapper" data-img="icon_sound_on.png" data-icon="fas fa-volume-up" data-color="text-white"></div>';
+        } else {
+          btn.innerHTML =
+            '<div class="w-6 h-6 game-icon-wrapper" data-img="icon_sound_off.png" data-icon="fas fa-volume-mute" data-color="text-gray-400"></div>';
+        }
+        initStaticIcons();
+
+        gameLoop();
+      }
+
+      function deleteSlot(id) {
+        localStorage.removeItem(`dicemancer_slot_${id}`);
+        renderMainMenu();
+      }
+
+      function exitToMenu() {
+        gameActive = false;
+        AudioEngine.stopMusic();
+        document.getElementById("game-ui").classList.add("hidden");
+        document.getElementById("game-over-screen").classList.add("hidden");
+        document.getElementById("main-menu").classList.remove("hidden");
+        renderMainMenu();
+      }
+
+      function resetGame() {
+        if (!currentSlotId) return;
+        const today = new Date().toDateString();
+        const currentLang = state.lang;
+        const currentAudio = state.audioEnabled;
+
+        state = getDefaultState();
+        state.lang = currentLang;
+        state.audioEnabled = currentAudio;
+        state.dailyRegenDate = today;
+
+        // Reset UI Elements
+        document.getElementById("game-over-screen").classList.add("hidden");
+
+        const btn = document.getElementById("btn-attack");
+        btn.disabled = false;
+        btn.classList.remove("opacity-50");
+
+        [1, 2, 3].forEach((i) => {
+          const d = document.getElementById(`die-${i}`);
+          applyIconToElement(d, "", "fas fa-question", "text-gray-400");
+          d.classList.remove("dice-rolling");
+          d.style.transform = "rotate(0deg)";
+        });
+
+        saveGame();
+        spawnMonster();
+        updateUI();
+        showToast(t("toast_reset"));
+        if (state.audioEnabled) AudioEngine.startMusic();
+      }
+
+      function showGameOver() {
+        document.getElementById("game-over-screen").classList.remove("hidden");
+        document.getElementById("final-score").innerText = state.kills;
+        AudioEngine.playGameOver();
+        AudioEngine.stopMusic();
+      }
+
+      function saveGame() {
+        if (!currentSlotId) return;
+        state.lastPlayed = new Date().toLocaleString();
+        localStorage.setItem(
+          `dicemancer_slot_${currentSlotId}`,
+          JSON.stringify(state)
+        );
+      }
+
+      // --- GAMEPLAY LOGIC (unchanged mostly) ---
+
+      function checkDailyLimit() {
+        const today = new Date().toDateString();
+        if (state.dailyRegenDate !== today) {
+          state.dailyRegenDate = today;
+          state.dailyRegenCount = 0;
+          saveGame();
+        }
+      }
+
+      function getMaxHp() {
+        let max = CONFIG.baseMaxHP; // 50
+        if (state.kills >= 100) max += 10;
+        if (state.itemsBought.includes("armor")) max += 5;
+        if (state.itemsBought.includes("helm")) max += 5;
+        if (state.itemsBought.includes("boots")) max += 5;
+        if (state.itemsBought.includes("shield")) max += 5;
+        if (state.itemsBought.includes("ring")) max += 20;
+        return max;
+      }
+
+      function showToast(msg, color = "#10b981") {
+        const el = document.createElement("div");
+        el.className = "toast-msg";
+        el.style.backgroundColor = color;
+        el.innerHTML = `<i class="fas fa-check mr-2"></i>${msg}`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
+      }
+
+      function spawnMonster() {
+        const isBoss = Math.random() < 0.05;
+        let hpMin, hpMax;
+        if (isBoss) {
+          hpMin = 10;
+          hpMax = 12;
+        } else {
+          if (state.kills < 20) {
+            hpMin = 4;
+            hpMax = 7;
+          } else if (state.kills < 40) {
+            hpMin = 5;
+            hpMax = 9;
+          } else if (state.kills < 60) {
+            hpMin = 6;
+            hpMax = 11;
+          } else if (state.kills < 80) {
+            hpMin = 7;
+            hpMax = 13;
+          } else {
+            hpMin = 6;
+            hpMax = 14;
+          }
+        }
+        const hp = Math.floor(Math.random() * (hpMax - hpMin + 1)) + hpMin;
+        const basicMonsters = [
+          {
+            icon: "fa-spider",
+            img: "monster_spider.png",
+            nameKey: "mob_spider",
+            minD: 1,
+            maxD: 3,
+          },
+          {
+            icon: "fa-ghost",
+            img: "monster_ghost.png",
+            nameKey: "mob_ghost",
+            minD: 1,
+            maxD: 3,
+          },
+          {
+            icon: "fa-dragon",
+            img: "monster_dragon.png",
+            nameKey: "mob_dragon",
+            minD: 1,
+            maxD: 3,
+          },
+          {
+            icon: "fa-skull",
+            img: "monster_skeleton.png",
+            nameKey: "mob_skeleton",
+            minD: 1,
+            maxD: 3,
+          },
+          {
+            icon: "fa-pastafarianism",
+            img: "monster_abomination.png",
+            nameKey: "mob_abomination",
+            minD: 1,
+            maxD: 3,
+          },
+        ];
+        let available = [...basicMonsters];
+        if (state.kills >= 600) {
+          available.push(
+            {
+              icon: "fa-hand-fist",
+              img: "monster_troll.png",
+              nameKey: "mob_troll",
+              minD: 2,
+              maxD: 4,
+            },
+            {
+              icon: "fa-hat-wizard",
+              img: "monster_witch.png",
+              nameKey: "mob_witch",
+              minD: 2,
+              maxD: 4,
+            }
+          );
+        }
+        const selection = isBoss
+          ? {
+              icon: "fa-optin-monster",
+              img: "monster_boss.png",
+              nameKey: "mob_boss",
+              minD: 2,
+              maxD: 5,
+            }
+          : available[Math.floor(Math.random() * available.length)];
+
+        state.currentMonster = {
+          hp: hp,
+          maxHp: hp,
+          isBoss: isBoss,
+          icon: selection.icon,
+          img: selection.img,
+          nameKey: selection.nameKey,
+          minD: selection.minD || 1,
+          maxD: selection.maxD || 3,
+        };
+        if (isBoss && state.audioEnabled) AudioEngine.playBoss();
+        renderMonster();
+      }
+
+      function activateGoldRing() {
+        const today = new Date().toDateString();
+        if (state.lastDailyRingUse === today) {
+          AudioEngine.playError();
+          alert(t("toast_ring_used"));
+          return;
+        }
+        if (!state.itemsBought.includes("gold_ring")) return;
+        state.goldBoostEnd = Date.now() + CONFIG.goldBoostDuration;
+        state.lastDailyRingUse = today;
+        AudioEngine.playBuff();
+        showToast(t("toast_ring_active"), "#eab308");
+        updateUI();
+        saveGame();
+      }
+
+      function attack() {
+        if (state.hp <= 0) return;
+        const btn = document.getElementById("btn-attack");
+        btn.disabled = true;
+        btn.classList.add("opacity-50");
+
+        const isScepterActive = Date.now() < state.scepterBuffEnd;
+        const diceCount = isScepterActive ? 4 : 3;
+        const diceIndices = isScepterActive ? [1, 2, 3, 4] : [1, 2, 3];
+        const die4 = document.getElementById("die-4");
+        if (isScepterActive) die4.classList.remove("hidden");
+        else die4.classList.add("hidden");
+
+        diceIndices.forEach((i) => {
+          const d = document.getElementById(`die-${i}`);
+          applyIconToElement(
+            d,
+            "",
+            "fas fa-question",
+            i === 4 ? "text-cyan-400" : "text-gray-400"
+          );
+          d.classList.add("dice-rolling");
+        });
+        AudioEngine.playAttack();
+
+        setTimeout(() => {
+          diceIndices.forEach((i) =>
+            document.getElementById(`die-${i}`).classList.remove("dice-rolling")
+          );
+          let rolls = [];
+          for (let k = 0; k < diceCount; k++)
+            rolls.push(Math.ceil(Math.random() * 6));
+          diceIndices.forEach((dIdx, i) => {
+            const d = document.getElementById(`die-${dIdx}`);
+            const val = rolls[i];
+            d.innerHTML = "";
+            const numSpan = document.createElement("span");
+            numSpan.innerText = val;
+            numSpan.className =
+              dIdx === 4 ? "text-cyan-600 font-bold" : "text-black font-bold";
+            numSpan.classList.add("retro-font");
+            numSpan.style.fontSize = "1.8rem";
+            d.appendChild(numSpan);
+            d.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+          });
+
+          // Sword
+          if (state.itemsBought.includes("sword") && Math.random() < 0.1) {
+            const heal = 3;
+            const currentMax = getMaxHp();
+            if (state.hp < currentMax) {
+              state.hp = Math.min(currentMax, state.hp + heal);
+              showDamageText(t("log_vamp", { val: heal }), "#b91c1c");
+            }
+          }
+          // Amulet
+          if (state.itemsBought.includes("amulet") && Math.random() < 0.1) {
+            if (Date.now() + CONFIG.amuletDuration > state.amuletBuffEnd) {
+              state.amuletBuffEnd = Date.now() + CONFIG.amuletDuration;
+              showDamageText(t("log_magic_shield"), "#a855f7");
+              AudioEngine.playMagicShield();
+            }
+          }
+          // Hammer
+          if (state.itemsBought.includes("hammer") && Math.random() < 0.2) {
+            state.amuletBuffEnd = Date.now() + CONFIG.hammerDuration;
+            showDamageText(t("log_supreme_shield"), "#a855f7");
+            AudioEngine.playMagicShield();
+          }
+          // Scepter
+          if (state.itemsBought.includes("scepter") && Math.random() < 0.1) {
+            state.scepterBuffEnd = Date.now() + CONFIG.scepterDuration;
+            showDamageText(t("log_scepter_proc"), "#22d3ee");
+            setTimeout(() => AudioEngine.playBuff(), 300);
+          }
+
+          const totalDamage = rolls.reduce((a, b) => a + b, 0);
+          const monster = state.currentMonster;
+
+          if (totalDamage >= monster.hp) {
+            AudioEngine.playWin();
+            handleVictory(monster);
+          } else {
+            const minD = monster.minD || 1;
+            const maxD = monster.maxD || 3;
+            let damageTaken =
+              Math.floor(Math.random() * (maxD - minD + 1)) + minD;
+            const now = Date.now();
+            if (now < state.amuletBuffEnd) {
+              damageTaken = 0;
+              showDamageText(t("log_invuln"), "#d8b4fe");
+            } else if (now < state.defenseBuffEnd) {
+              damageTaken = Math.max(0, damageTaken - 1);
+              showDamageText(t("log_shield"), "#60a5fa");
+            } else {
+              showDamageText(`-${damageTaken} PV`);
+            }
+
+            if (damageTaken > 0) {
+              state.hp = state.hp - damageTaken;
+              AudioEngine.playHit();
+              const monsterEl = document.getElementById("monster-container");
+              monsterEl.classList.add("shake-anim");
+              setTimeout(() => monsterEl.classList.remove("shake-anim"), 500);
+              document.getElementById("combat-log").textContent = t(
+                "log_fail",
+                { val: damageTaken }
+              );
+              document.getElementById("combat-log").className =
+                "text-center h-6 text-xs md:text-sm font-bold text-red-500 w-full truncate px-2";
+            } else {
+              document.getElementById("combat-log").textContent =
+                t("log_block");
+              document.getElementById("combat-log").className =
+                "text-center h-6 text-xs md:text-sm font-bold text-purple-400 w-full truncate px-2";
+            }
+
+            if (state.hp <= 0) {
+              state.hp = 0;
+              updateUI();
+              saveGame();
+              setTimeout(showGameOver, 1000);
+            }
+          }
+          updateUI();
+          saveGame();
+          if (state.hp > 0) {
+            setTimeout(() => {
+              btn.disabled = false;
+              btn.classList.remove("opacity-50");
+            }, 500);
+          }
+        }, 500);
+      }
+
+      function handleVictory(monster) {
+        state.kills++;
+        document.getElementById("combat-log").textContent = t("log_win");
+        document.getElementById("combat-log").className =
+          "text-center h-6 text-sm font-bold text-green-400";
+        let lootText = "";
+        let goldDrop = 0;
+        const currentMaxHP = getMaxHp();
+        if (state.itemsBought.includes("axe") && state.kills % 500 === 0) {
+          state.hp = Math.min(currentMaxHP, state.hp + 50);
+          showDamageText(t("log_axe_heal"), "#ef4444");
+          setTimeout(() => AudioEngine.playBuff(), 200);
+        }
+        if (monster.isBoss) {
+          goldDrop = 5;
+          const color =
+            CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
+          addGem(color, "normal", 1);
+          state.hp = Math.min(currentMaxHP, state.hp + 10);
+          lootText =
+            t("log_loot", { val: goldDrop }) +
+            t("log_gem", { val: 1, color: t("q_normal") }) +
+            t("log_potion").replace("5", "10");
+        } else {
+          goldDrop = Math.floor(Math.random() * 3) + 1;
+          lootText = t("log_loot", { val: goldDrop });
+          if (Math.random() < 0.3) {
+            const color =
+              CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
+            addGem(color, "mediocre", 1);
+          }
+          if (Math.random() < 0.1) {
+            state.hp = Math.min(currentMaxHP, state.hp + 5);
+            lootText += t("log_potion");
+          }
+        }
+        if (Date.now() < state.goldBoostEnd) {
+          goldDrop *= 2;
+          lootText = t("log_loot_x2", { val: goldDrop });
+        }
+        if (state.kills === 100) {
+          lootText += t("log_level_100");
+          state.hp += 10;
+        }
+        state.gold += goldDrop;
+        setTimeout(() => showDamageText(lootText, "#fbbf24"), 100);
+        AudioEngine.playGold();
+        spawnMonster();
+      }
+
+      function addGem(color, quality, amount) {
+        state.inventory[color][quality] += amount;
+        renderInventory();
+      }
+      function showDamageText(text, color = "#ff4444") {
+        const container = document.getElementById("main-container");
+        const el = document.createElement("div");
+        el.className = "damage-text";
+        el.style.color = color;
+        el.innerHTML = text;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 800);
+      }
+      function startCraft(color, qualityTo) {
+        const cost = qualityTo === "normal" ? 5 : 10;
+        const sourceQ =
+          CONFIG.qualities[CONFIG.qualities.indexOf(qualityTo) - 1];
+        if (state.inventory[color][sourceQ] >= cost) {
+          state.inventory[color][sourceQ] -= cost;
+          state.craftingQueue.push({
+            color: color,
+            qualityTo: qualityTo,
+            endTime: Date.now() + CONFIG.fusionTime,
+            id: Math.random().toString(36).substr(2, 9),
+          });
+          AudioEngine.playCraft();
+          updateUI();
+          renderCrafting();
+          saveGame();
+        } else {
+          AudioEngine.playError();
+          alert(t("toast_no_gems"));
+        }
+      }
+      function gameLoop() {
+        if (!gameActive) {
+          requestAnimationFrame(gameLoop);
+          return;
+        } // Pause loop if in menu
+        const now = Date.now();
+        let changed = false;
+        for (let i = state.craftingQueue.length - 1; i >= 0; i--) {
+          const item = state.craftingQueue[i];
+          if (now >= item.endTime) {
+            state.inventory[item.color][item.qualityTo]++;
+            state.craftingQueue.splice(i, 1);
+            changed = true;
+          }
+        }
+        if (now < state.regenBuffEnd && state.hp > 0) {
+          if (now > state.lastRegenTick + CONFIG.regenTick) {
+            const max = getMaxHp();
+            if (state.hp < max) {
+              state.hp = Math.min(max, state.hp + CONFIG.regenAmount);
+              state.lastRegenTick = now;
+              showDamageText(`+${CONFIG.regenAmount} HP`, "#4ade80");
+              AudioEngine.playHealTick();
+              changed = true;
+            }
+          }
+        }
+        if (changed) {
+          saveGame();
+          updateUI();
+          renderCrafting();
+          renderInventory();
+        }
+        state.craftingQueue.forEach((item) => {
+          const el = document.getElementById(`prog-${item.id}`);
+          if (el) {
+            const timeLeft = item.endTime - now;
+            const percent =
+              100 - (Math.max(0, timeLeft) / CONFIG.fusionTime) * 100;
+            el.style.width = `${percent}%`;
+          }
+        });
+
+        // Buff UIs
+        const defBuff = document.getElementById("defense-buff-container");
+        if (now < state.defenseBuffEnd) {
+          defBuff.classList.remove("hidden");
+          const p =
+            (Math.max(0, state.defenseBuffEnd - now) / CONFIG.defenseDuration) *
+            100;
+          document.getElementById("defense-bar").style.width = `${p}%`;
+          document.getElementById("defense-timer").innerText = `${Math.ceil(
+            (state.defenseBuffEnd - now) / 1000
+          )}s`;
+        } else defBuff.classList.add("hidden");
+        const regenBuff = document.getElementById("regen-buff-container");
+        if (now < state.regenBuffEnd) {
+          regenBuff.classList.remove("hidden");
+          const p =
+            (Math.max(0, state.regenBuffEnd - now) / CONFIG.regenDuration) *
+            100;
+          document.getElementById("regen-bar").style.width = `${p}%`;
+          document.getElementById("regen-timer").innerText = `${Math.ceil(
+            (state.regenBuffEnd - now) / 1000
+          )}s`;
+        } else regenBuff.classList.add("hidden");
+        const goldBuff = document.getElementById("gold-buff-container");
+        if (now < state.goldBoostEnd) {
+          goldBuff.classList.remove("hidden");
+          const p =
+            (Math.max(0, state.goldBoostEnd - now) / CONFIG.goldBoostDuration) *
+            100;
+          document.getElementById("gold-bar").style.width = `${p}%`;
+          document.getElementById("gold-timer").innerText = `${Math.ceil(
+            (state.goldBoostEnd - now) / 1000
+          )}s`;
+        } else goldBuff.classList.add("hidden");
+        const scepterBuff = document.getElementById("scepter-buff-container");
+        if (now < state.scepterBuffEnd) {
+          scepterBuff.classList.remove("hidden");
+          const p =
+            (Math.max(0, state.scepterBuffEnd - now) / CONFIG.scepterDuration) *
+            100;
+          document.getElementById("scepter-bar").style.width = `${p}%`;
+          document.getElementById("scepter-timer").innerText = `${Math.ceil(
+            (state.scepterBuffEnd - now) / 1000
+          )}s`;
+          if (document.getElementById("die-4").classList.contains("hidden"))
+            document.getElementById("die-4").classList.remove("hidden");
+        } else {
+          scepterBuff.classList.add("hidden");
+          if (!document.getElementById("die-4").classList.contains("hidden"))
+            document.getElementById("die-4").classList.add("hidden");
+        }
+        const amBuff = document.getElementById("amulet-buff-container");
+        if (now < state.amuletBuffEnd) {
+          amBuff.classList.remove("hidden");
+          const timeLeft = Math.max(0, state.amuletBuffEnd - now);
+          const base =
+            timeLeft > 10000 ? CONFIG.hammerDuration : CONFIG.amuletDuration;
+          document.getElementById("amulet-bar").style.width = `${Math.min(
+            100,
+            (timeLeft / base) * 100
+          )}%`;
+          document.getElementById("amulet-timer").innerText = `${Math.ceil(
+            timeLeft / 1000
+          )}s`;
+        } else amBuff.classList.add("hidden");
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      function buyPotion() {
+        const currentMaxHP = getMaxHp();
+        if (state.gold >= CONFIG.potionCost && state.hp < currentMaxHP) {
+          state.gold -= CONFIG.potionCost;
+          state.hp = Math.min(currentMaxHP, state.hp + CONFIG.healAmount);
+          AudioEngine.playGold();
+          updateUI();
+          saveGame();
+        } else if (state.hp >= currentMaxHP) {
+          AudioEngine.playError();
+          alert(t("toast_health_max"));
+        } else {
+          AudioEngine.playError();
+          alert(t("toast_no_gold"));
+        }
+      }
+      function buyDefensePotion() {
+        if (state.gold >= CONFIG.defenseCost) {
+          state.gold -= CONFIG.defenseCost;
+          state.defenseBuffEnd = Date.now() + CONFIG.defenseDuration;
+          AudioEngine.playBuff();
+          updateUI();
+          saveGame();
+          document.querySelector('[data-target="tab-combat"]').click();
+        } else {
+          AudioEngine.playError();
+          alert(t("toast_no_gold"));
+        }
+      }
+      function buyRegenPotion() {
+        checkDailyLimit();
+        if (state.dailyRegenCount >= CONFIG.regenLimit) {
+          AudioEngine.playError();
+          alert(t("toast_limit_daily"));
+          return;
+        }
+        if (state.gold >= CONFIG.regenCost) {
+          state.gold -= CONFIG.regenCost;
+          state.dailyRegenCount++;
+          state.regenBuffEnd = Date.now() + CONFIG.regenDuration;
+          state.lastRegenTick = Date.now();
+          AudioEngine.playBuff();
+          updateUI();
+          saveGame();
+          document.querySelector('[data-target="tab-combat"]').click();
+        } else {
+          AudioEngine.playError();
+          alert(t("toast_no_gold"));
+        }
+      }
+      function buyItem(itemId) {
+        const item = CONFIG.items.find((i) => i.id === itemId);
+        if (state.itemsBought.includes(itemId)) return;
+        let canAfford = true;
+        if (item.goldCost && state.gold < item.goldCost) canAfford = false;
+        if (item.costs) {
+          item.costs.forEach((c) => {
+            if (state.inventory[c.c]["perfect"] < c.a) canAfford = false;
+          });
+        } else {
+          if (state.inventory[item.gemColor]["perfect"] < item.cost)
+            canAfford = false;
+        }
+        if (canAfford) {
+          if (item.goldCost) state.gold -= item.goldCost;
+          if (item.costs) {
+            item.costs.forEach((c) => {
+              state.inventory[c.c]["perfect"] -= c.a;
+            });
+          } else {
+            state.inventory[item.gemColor]["perfect"] -= item.cost;
+          }
+          state.itemsBought.push(itemId);
+          AudioEngine.playWin();
+          if (itemId === "ring") state.hp += 20;
+          if (["armor", "helm", "boots", "shield"].includes(itemId))
+            state.hp += 5;
+          updateUI();
+          renderShop();
+          saveGame();
+        } else {
+          AudioEngine.playError();
+          let msg = t("to") + " ";
+          if (item.goldCost) msg += `${item.goldCost} ${t("need_gold")}, `;
+          if (item.costs) {
+            item.costs.forEach(
+              (c) =>
+                (msg += `${c.a} ${t("need_gems")} ${t("c_" + c.c)} ${t(
+                  "q_perfect"
+                )} `)
+            );
+          } else {
+            msg += `${item.cost} ${t("need_gems")} ${t(
+              "c_" + item.gemColor
+            )} ${t("q_perfect")}`;
+          }
+          alert(msg);
+        }
+      }
+
+      function updateUI() {
+        const currentMaxHP = getMaxHp();
+        document.getElementById("hp-bar").style.width = `${Math.min(
+          100,
+          (state.hp / currentMaxHP) * 100
+        )}%`;
+        document.getElementById(
+          "hp-text"
+        ).innerText = `${state.hp}/${currentMaxHP}`;
+        document.getElementById("gold-display").innerText = state.gold;
+        document.getElementById("kill-display").innerText = state.kills;
+        const limitEl = document.getElementById("regen-limit-text");
+        if (limitEl)
+          limitEl.innerText = `${state.dailyRegenCount}/${CONFIG.regenLimit} D`;
+        const ringBtn = document.getElementById("btn-activate-ring");
+        if (state.itemsBought.includes("gold_ring")) {
+          ringBtn.classList.remove("hidden");
+          const today = new Date().toDateString();
+          const isUsed = state.lastDailyRingUse === today;
+          const isActive = Date.now() < state.goldBoostEnd;
+          if (isActive) {
+            ringBtn.className =
+              "ml-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white animate-pulse bg-yellow-400";
+            ringBtn.disabled = true;
+            ringBtn.innerHTML = '<i class="fas fa-clock"></i>';
+          } else if (isUsed) {
+            ringBtn.className =
+              "ml-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white bg-gray-500";
+            ringBtn.disabled = true;
+            ringBtn.innerHTML = '<i class="fas fa-ban"></i>';
+          } else {
+            ringBtn.className =
+              "ml-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white bg-yellow-600 hover:bg-yellow-500 transition-colors";
+            ringBtn.disabled = false;
+            ringBtn.innerHTML = '<i class="fas fa-bolt"></i>';
+          }
+        } else {
+          ringBtn.classList.add("hidden");
+        }
+      }
+
+      function renderMonster() {
+        const m = state.currentMonster;
+        if (!m) return;
+        const container = document.getElementById("monster-container");
+        const bossLabel = document.getElementById("boss-label");
+        applyIconToElement(
+          container,
+          m.img,
+          `fas ${m.icon}`,
+          m.isBoss ? "text-red-500 text-6xl" : "text-gray-300 text-6xl"
+        );
+        if (m.isBoss) {
+          container.classList.add("boss-glow");
+          bossLabel.classList.remove("hidden");
+          document.getElementById("monster-name").innerText = t("boss_name");
+          document
+            .getElementById("monster-name")
+            .classList.add("text-red-400", "font-bold");
+        } else {
+          container.classList.remove("boss-glow");
+          bossLabel.classList.add("hidden");
+          document.getElementById("monster-name").innerText = t(m.nameKey);
+          document.getElementById("monster-name").className =
+            "text-red-400 text-sm";
+        }
+        document.getElementById("monster-hp-bar").style.width = `${
+          (m.hp / m.maxHp) * 100
+        }%`;
+        document.getElementById("monster-hp-text").innerText = `HP: ${m.hp}`;
+      }
+
+      function renderInventory() {
+        const grid = document.getElementById("inventory-grid");
+        grid.innerHTML = "";
+        CONFIG.colors.forEach((color) => {
+          const row = document.createElement("div");
+          row.className =
+            "bg-slate-700 p-3 rounded flex items-center justify-between border-l-4 border-slate-600";
+          const labelDiv = document.createElement("div");
+          labelDiv.className = `font-bold ${COLOR_CLASSES[color]} flex items-center gap-3`;
+          const gemIcon = document.createElement("div");
+          gemIcon.className = "w-10 h-10 md:w-12 md:h-12 shrink-0";
+          applyIconToElement(
+            gemIcon,
+            `gem_${color}.png`,
+            "fas fa-gem",
+            COLOR_CLASSES[color]
+          );
+          labelDiv.appendChild(gemIcon);
+          const txt = document.createElement("span");
+          txt.innerText = t("c_" + color);
+          labelDiv.appendChild(txt);
+          row.appendChild(labelDiv);
+          const countsDiv = document.createElement("div");
+          countsDiv.className = "flex gap-2 md:gap-3 text-xs";
+          ["mediocre", "normal", "flawless", "perfect"].forEach((q, idx) => {
+            const count = state.inventory[color][q];
+            const shortName = t("qs_" + q);
+            countsDiv.innerHTML += `<div class="flex flex-col items-center"><span class="text-gray-500">${shortName}</span><span class="${
+              count > 0 ? "text-white font-bold" : "text-gray-600"
+            }">${count}</span></div>`;
+          });
+          row.appendChild(countsDiv);
+          grid.appendChild(row);
+        });
+      }
+
+      function renderCrafting() {
+        const container = document.getElementById("crafting-container");
+        container.innerHTML = "";
+        if (state.craftingQueue.length > 0) {
+          const activeDiv = document.createElement("div");
+          activeDiv.className = "mb-6 bg-slate-900 p-2 rounded";
+          activeDiv.innerHTML = `<h3 class="text-xs font-bold text-gray-400 mb-2">${t(
+            "fusing"
+          )}</h3>`;
+          state.craftingQueue.forEach((item) => {
+            const qName = t("q_" + item.qualityTo);
+            activeDiv.innerHTML += `<div class="mb-2"><div class="flex justify-between text-xs text-white"><span class="${
+              COLOR_CLASSES[item.color]
+            }">${t("c_" + item.color)}</span><span>${t(
+              "to"
+            )} ${qName}</span></div><div class="progress-bar-container"><div id="prog-${
+              item.id
+            }" class="progress-bar-fill"></div></div></div>`;
+          });
+          container.appendChild(activeDiv);
+        }
+        CONFIG.colors.forEach((color) => {
+          const section = document.createElement("div");
+          section.className = "bg-slate-700 p-3 rounded mb-2";
+          section.innerHTML = `<div class="font-bold mb-2 ${
+            COLOR_CLASSES[color]
+          } border-b border-gray-600 pb-1">${t("c_" + color)}</div>`;
+          const actions = document.createElement("div");
+          actions.className = "grid grid-cols-3 gap-2";
+          actions.appendChild(createCraftBtn(color, "normal", 5));
+          actions.appendChild(createCraftBtn(color, "flawless", 10));
+          actions.appendChild(createCraftBtn(color, "perfect", 10));
+          section.appendChild(actions);
+          container.appendChild(section);
+        });
+      }
+
+      function createCraftBtn(color, targetQuality, cost) {
+        const sourceQ =
+          CONFIG.qualities[CONFIG.qualities.indexOf(targetQuality) - 1];
+        const btn = document.createElement("button");
+        const canAfford = state.inventory[color][sourceQ] >= cost;
+        btn.className = `p-2 rounded text-[10px] flex flex-col items-center justify-center font-bold transition-colors ${
+          canAfford
+            ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow"
+            : "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
+        }`;
+        const shortSource = t("qs_" + sourceQ);
+        const shortTarget = t("qs_" + targetQuality);
+        btn.innerHTML = `<span>${cost} ${shortSource}</span><i class="fas fa-arrow-down my-1"></i><span>1 ${shortTarget}</span>`;
+        if (canAfford) btn.onclick = () => startCraft(color, targetQuality);
+        return btn;
+      }
+
+      function renderShop() {
+        const container = document.getElementById("legendary-shop");
+        container.innerHTML = "";
+        let allBought = true;
+        CONFIG.items.forEach((item) => {
+          const isBought = state.itemsBought.includes(item.id);
+          if (!isBought) allBought = false;
+          let canAfford = true;
+          if (item.goldCost && state.gold < item.goldCost) canAfford = false;
+          if (item.costs) {
+            item.costs.forEach((c) => {
+              if (state.inventory[c.c]["perfect"] < c.a) canAfford = false;
+            });
+          } else {
+            if (state.inventory[item.gemColor]["perfect"] < item.cost)
+              canAfford = false;
+          }
+          const el = document.createElement("div");
+          el.className = `p-3 rounded flex justify-between items-center border ${
+            isBought
+              ? "bg-green-900/30 border-green-700"
+              : "bg-slate-700 border-slate-600"
+          }`;
+          const iconDiv = document.createElement("div");
+          iconDiv.className = `w-16 h-16 md:w-20 md:h-20 rounded bg-slate-800 mr-3 overflow-hidden flex-shrink-0`;
+          applyIconToElement(
+            iconDiv,
+            item.img,
+            `fas ${item.icon}`,
+            isBought ? "text-green-400 text-xl" : "text-gray-500 text-xl"
+          );
+          const textDiv = document.createElement("div");
+          textDiv.className = "flex-1";
+          textDiv.innerHTML = `<div class="font-bold text-sm ${
+            isBought ? "text-green-400 line-through" : "text-gray-200"
+          }">${t(item.nameKey)}</div><div class="text-[10px] text-gray-400">${t(
+            item.descKey
+          )}</div>`;
+          el.appendChild(iconDiv);
+          el.appendChild(textDiv);
+          const btn = document.createElement("button");
+          if (isBought) {
+            btn.className = "text-green-500 font-bold text-m";
+            btn.innerText = t("acquired");
+          } else {
+            btn.className = `px-3 py-1 rounded text-xs md:text-m font-bold ${
+              canAfford
+                ? "bg-yellow-600 hover:bg-yellow-500 text-white"
+                : "bg-gray-600 text-gray-400"
+            }`;
+            let costStr = "";
+            if (item.goldCost)
+              costStr += `<span class="text-yellow-400">${item.goldCost} ${t(
+                "need_gold"
+              )}</span><br>+ `;
+            if (item.costs) {
+              item.costs.forEach((c, i) => {
+                if (i > 0 && i % 2 == 0) costStr += "<br>";
+                if (i !== 0) costStr += " + ";
+                costStr += `${c.a}<i class="fas fa-gem ${
+                  COLOR_CLASSES[c.c]
+                } mx-0.5"></i>`;
+              });
+              btn.innerHTML = costStr;
+            } else {
+              btn.innerHTML = `${item.cost} <i class="fas fa-gem ${
+                COLOR_CLASSES[item.gemColor]
+              }"></i>`;
+            }
+            if (canAfford) btn.onclick = () => buyItem(item.id);
+          }
+          el.appendChild(btn);
+          container.appendChild(el);
+        });
+        if (allBought)
+          document.getElementById("victory-message").classList.remove("hidden");
+      }
+
+      function setupTabs() {
+        const buttons = document.querySelectorAll(".tab-btn");
+        const sections = document.querySelectorAll("main section");
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            AudioEngine.playClick();
+            buttons.forEach((b) =>
+              b.classList.remove("active", "text-indigo-400")
+            );
+            btn.classList.add("active", "text-indigo-400");
+            const targetId = btn.getAttribute("data-target");
+            sections.forEach((sec) => sec.classList.add("hidden"));
+            document.getElementById(targetId).classList.remove("hidden");
+            if (targetId === "tab-inventory") renderInventory();
+            if (targetId === "tab-forge") renderCrafting();
+            if (targetId === "tab-shop") renderShop();
+          });
+        });
+        document.querySelectorAll("button").forEach((b) => {
+          if (!b.classList.contains("tab-btn")) {
+            b.addEventListener("click", () => {
+              if (!b.disabled) AudioEngine.playClick();
+            });
+          }
+        });
+        document.getElementById("btn-attack").addEventListener("click", attack);
+        document
+          .getElementById("btn-buy-potion")
+          .addEventListener("click", buyPotion);
+        document
+          .getElementById("btn-buy-defense")
+          .addEventListener("click", buyDefensePotion);
+        document
+          .getElementById("btn-buy-regen")
+          .addEventListener("click", buyRegenPotion);
+        document
+          .getElementById("btn-activate-ring")
+          .addEventListener("click", activateGoldRing);
+        document
+          .getElementById("btn-manual-save")
+          .addEventListener("click", () => {
+            saveGame();
+            showToast(t("toast_save"));
+          });
+        document
+          .getElementById("music-toggle")
+          .addEventListener("click", () => {
+            state.audioEnabled = !state.audioEnabled;
+            AudioEngine.init();
+            const btn = document.getElementById("music-toggle");
+            btn.innerHTML = state.audioEnabled
+              ? state.audioEnabled
+                ? '<div class="w-6 h-6 game-icon-wrapper" data-img="icon_sound_on.png" data-icon="fas fa-volume-up" data-color="text-white"></div>'
+                : ""
+              : '<div class="w-6 h-6 game-icon-wrapper" data-img="icon_sound_off.png" data-icon="fas fa-volume-mute" data-color="text-gray-400"></div>';
+            const wrapper = btn.querySelector(".game-icon-wrapper");
+            if (wrapper)
+              applyIconToElement(
+                wrapper,
+                wrapper.dataset.img,
+                wrapper.dataset.icon,
+                wrapper.dataset.color
+              );
+            if (state.audioEnabled) {
+              AudioEngine.startMusic();
+              AudioEngine.playWin();
+            } else AudioEngine.stopMusic();
+          });
+        document.getElementById("lang-toggle").addEventListener("click", () => {
+          const newLang = state.lang === "fr" ? "en" : "fr";
+          setLanguage(newLang);
+        });
+      }
+
+      // Start
+      initGame();
+    </script>
+  </body>
+</html>
