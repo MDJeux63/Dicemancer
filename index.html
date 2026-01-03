@@ -301,7 +301,7 @@
         DICEMANCER
       </h1>
       <p class="text-gray-400 mb-12 text-lg">
-        Par <span class="text-yellow-400 font-bold">VoodooX</span>
+        x <span class="text-yellow-400 font-bold">VoodooX</span> x
       </p>
 
       <div class="w-full max-w-md space-y-4" id="slots-container">
@@ -2037,7 +2037,7 @@
           setTimeout(() => AudioEngine.playBuff(), 200);
         }
         if (monster.isBoss) {
-          goldDrop = 5;
+          goldDrop = 15;
           const color =
             CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
           addGem(color, "normal", 1);
@@ -2047,7 +2047,7 @@
             t("log_gem", { val: 1, color: t("q_normal") }) +
             t("log_potion").replace("5", "10");
         } else {
-          goldDrop = Math.floor(Math.random() * 3) + 1;
+          goldDrop = Math.floor(Math.random() * 5) + 2; // 2 to 6 gold
           lootText = t("log_loot", { val: goldDrop });
           if (Math.random() < 0.3) {
             const color =
