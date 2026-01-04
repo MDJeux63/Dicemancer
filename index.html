@@ -997,7 +997,9 @@
           mob_abomination: "Abomination",
           mob_troll: "Troll",
           mob_witch: "Sorcière",
+          mob_harpy: "Harpie",
           mob_boss: "Boss",
+          log_gold_stolen: "-{val} Or (Volé !)",
         },
         en: {
           game_title: "Dicemancer",
@@ -1117,7 +1119,9 @@
           mob_abomination: "Abomination",
           mob_troll: "Troll",
           mob_witch: "Witch",
+          mob_harpy: "Harpy",
           mob_boss: "Boss",
+          log_gold_stolen: "-{val} Gold (Stolen!)",
         },
       };
 
@@ -1240,7 +1244,7 @@
               { c: "violet", a: 1 },
               { c: "green", a: 1 },
             ],
-            goldCost: 500,
+            goldCost: 1500,
             icon: "fa-ring",
             img: "item_ring_gold.png",
           },
@@ -1269,7 +1273,7 @@
               { c: "blue", a: 20 },
               { c: "violet", a: 20 },
             ],
-            goldCost: 4000,
+            goldCost: 5000,
             icon: "fa-user-secret",
             img: "item_cape.png",
           },
@@ -1791,7 +1795,10 @@
             hpMax = 14;
           }
         }
-        const hp = Math.floor(Math.random() * (hpMax - hpMin + 1)) + hpMin;
+
+        // Initial HP roll (might be overridden for specific monsters)
+        let hp = Math.floor(Math.random() * (hpMax - hpMin + 1)) + hpMin;
+
         const basicMonsters = [
           {
             icon: "fa-spider",
@@ -1829,7 +1836,9 @@
             maxD: 3,
           },
         ];
+
         let available = [...basicMonsters];
+
         if (state.kills >= 600) {
           available.push(
             {
@@ -1848,6 +1857,20 @@
             }
           );
         }
+
+        // --- NEW MONSTER: HARPY (1000+ Kills) ---
+        if (state.kills >= 1000) {
+          available.push({
+            icon: "fa-crow", // Fallback icon
+            img: "monster_harpy.png", // New asset
+            nameKey: "mob_harpy",
+            minD: 3,
+            maxD: 5,
+            special: "thief",
+            hpRange: [12, 15], // Specific HP range
+          });
+        }
+
         const selection = isBoss
           ? {
               icon: "fa-optin-monster",
@@ -1857,6 +1880,14 @@
               maxD: 5,
             }
           : available[Math.floor(Math.random() * available.length)];
+
+        // Override HP if monster has specific range
+        if (selection.hpRange) {
+          hp =
+            Math.floor(
+              Math.random() * (selection.hpRange[1] - selection.hpRange[0] + 1)
+            ) + selection.hpRange[0];
+        }
 
         state.currentMonster = {
           hp: hp,
@@ -1868,8 +1899,20 @@
           minD: selection.minD || 1,
           maxD: selection.maxD || 3,
         };
+
+        // Handle Harpy Theft logic immediately on spawn
+        if (selection.special === "thief") {
+          const stolen = Math.min(state.gold, 10);
+          if (stolen > 0) {
+            state.gold -= stolen;
+            showDamageText(t("log_gold_stolen", { val: stolen }), "#fbbf24"); // Yellow text
+            AudioEngine.playError(); // Use error sound for theft
+          }
+        }
+
         if (isBoss && state.audioEnabled) AudioEngine.playBoss();
         renderMonster();
+        updateUI(); // Ensure gold update is shown
       }
 
       function activateGoldRing() {
