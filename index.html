@@ -1902,7 +1902,7 @@
 
         // Handle Harpy Theft logic immediately on spawn
         if (selection.special === "thief") {
-          const stolen = Math.min(state.gold, 10);
+          const stolen = Math.min(state.gold, 20);
           if (stolen > 0) {
             state.gold -= stolen;
             showDamageText(t("log_gold_stolen", { val: stolen }), "#fbbf24"); // Yellow text
