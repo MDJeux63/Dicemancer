@@ -939,7 +939,7 @@
           item_hammer_name: "Marteau de Guerre",
           item_hammer_desc: "20% chance Invulnérabilité (1 min).",
           item_cape_name: "Cape du Maître du Donjon",
-          item_cape_desc: "L'objet ultime. Aucun bonus.",
+          item_cape_desc: "L'objet ultime.",
           item_scepter_name: "Sceptre d'Invocation",
           item_scepter_desc: "10% chance d'avoir 1 dé en + pendant 1 min.",
 
@@ -1061,7 +1061,7 @@
           item_hammer_name: "War Hammer",
           item_hammer_desc: "20% chance Invulnerability (1 min).",
           item_cape_name: "Dungeon Master Cape",
-          item_cape_desc: "The ultimate item. No bonus.",
+          item_cape_desc: "The ultimate item.",
           item_scepter_name: "Summoner's Scepter",
           item_scepter_desc: "10% chance for +1 die for 1 min.",
 
@@ -1240,7 +1240,7 @@
               { c: "violet", a: 1 },
               { c: "green", a: 1 },
             ],
-            goldCost: 50,
+            goldCost: 500,
             icon: "fa-ring",
             img: "item_ring_gold.png",
           },
@@ -1269,7 +1269,7 @@
               { c: "blue", a: 20 },
               { c: "violet", a: 20 },
             ],
-            goldCost: 400,
+            goldCost: 4000,
             icon: "fa-user-secret",
             img: "item_cape.png",
           },
@@ -2037,7 +2037,7 @@
           setTimeout(() => AudioEngine.playBuff(), 200);
         }
         if (monster.isBoss) {
-          goldDrop = 15;
+          goldDrop = 10;
           const color =
             CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
           addGem(color, "normal", 1);
